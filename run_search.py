@@ -62,7 +62,12 @@ def run_search(problem, search_function, parameter=None):
     print("{}\n".format(ip))
     show_solution(node, end - start)
     print()
-
+    
+    # save the search results to list
+    value=[int(field) for field in str(ip).split()]
+    value.append(end-start)
+    value.append([ str(action.name)+ str(action.args) for action in node.solution()])
+    return value
 
 def manual():
 
@@ -83,6 +88,8 @@ def manual():
     print("\n  python {} -p {} -s {}\n".format(__file__,
                                                " ".join(p_choices),
                                                " ".join(s_choices)))
+#a place to store the results of each search
+datastore=[]
 
 
 def main(p_choices, s_choices):
@@ -95,10 +102,23 @@ def main(p_choices, s_choices):
         for sname, s, h in searches:
             hstring = h if not h else " with {}".format(h)
             print("\nSolving {} using {}{}...".format(pname, sname, hstring))
+            curr_prob=pname
+            curr_search="{}{}".format(sname, hstring)
 
             _p = p()
             _h = None if not h else getattr(_p, h)
-            run_search(_p, s, _h)
+            value=run_search(_p, s, _h)
+            value.append(curr_prob)
+            value.append(curr_search)
+            datastore.append(value)
+            
+    #write the results to a file!
+    import pandas as pd
+    df = pd.DataFrame(datastore, columns=["Expansions","Goal Tests","New Nodes", "Run Time", "Actions","curr_prob","curr_search"])
+    df =df[['curr_prob',"curr_search","Expansions","Goal Tests","New Nodes", "Run Time", "Actions"]]
+    #df.set_index('curr_search', inplace=True)
+    df.to_csv('run_search_results.csv', index=False)
+        
 
 
 def show_solution(node, elapsed_time):
