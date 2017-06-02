@@ -88,14 +88,15 @@ def manual():
     print("\n  python {} -p {} -s {}\n".format(__file__,
                                                " ".join(p_choices),
                                                " ".join(s_choices)))
-#a place to store the results of each search
-datastore=[]
 
 
 def main(p_choices, s_choices):
 
     problems = [PROBLEMS[i-1] for i in map(int, p_choices)]
     searches = [SEARCHES[i-1] for i in map(int, s_choices)]
+    
+    #a place to store the results of each search
+    datastore=[]
 
     for pname, p in problems:
 
@@ -115,8 +116,7 @@ def main(p_choices, s_choices):
     #write the results to a file!
     import pandas as pd
     df = pd.DataFrame(datastore, columns=["Expansions","Goal Tests","New Nodes", "Run Time", "Actions","curr_prob","curr_search"])
-    df =df[['curr_prob',"curr_search","Expansions","Goal Tests","New Nodes", "Run Time", "Actions"]]
-    #df.set_index('curr_search', inplace=True)
+    df =df[['curr_prob',"curr_search","Expansions","Goal Tests","New Nodes", "Run Time", "Actions"]] # re-order the columns
     df.to_csv('run_search_results.csv', index=False)
         
 
