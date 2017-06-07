@@ -318,7 +318,7 @@ class PlanningGraph():
             action_node=PgNode_a(action)
             # iff all prerequisite literals for the action hold in S0.
             # to see if a proposed PgNode_a has prenodes that are a subset of the previous S level.
-            if self.s_levels[level]==action_node.prenodes:
+            if action_node.prenodes & self.s_levels[level]==action_node.prenodes  :
                 self.a_levels[level].add(action_node)
                 
                 # Once an
@@ -417,9 +417,9 @@ class PlanningGraph():
         """
         # TODO test for Inconsistent Effects between nodes
         node_a1_effects_a2=set(node_a1.action.effect_add) & set(node_a2.action.effect_rem)
-        node_a2_effects_A1=set(node_a1.action.effect_rem) & set(node_a2.action.effect_add
+        node_a2_effects_a1=set(node_a1.action.effect_rem) & set(node_a2.action.effect_add)
  
-        return node_a1_aff_a2 or node_a2_effects_A1
+        return node_a1_effects_a2 or node_a2_effects_a1
 
     def interference_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
         """
@@ -436,8 +436,11 @@ class PlanningGraph():
         :return: bool
         """
         # TODO test for Interference between nodes
-        if node_a1.actions  node_a2.:
-        return False
+        node_a1_node_a2 = set(node_a1.action.effect_add) & set(node_a2.action.precond_neg) or set(node_a1.action.effect_rem) & set(node_a2.action.precond_pos)
+        
+        node_a2_node_a1 = set(node_a2.action.effect_rem) & set(node_a1.action.precond_pos) or set(node_a2.action.effect_add) & set(node_a1.action.precond_neg)
+        
+        return node_a1_node_a2 or node_a2_node_a1
 
     def competing_needs_mutex(self, node_a1: PgNode_a, node_a2: PgNode_a) -> bool:
         """
@@ -451,7 +454,13 @@ class PlanningGraph():
         """
 
         # TODO test for Competing Needs between nodes
-        return False
+        mutex_found=False
+        for a1_parent_node in node_a1.parents:
+            for a2_parent_node in node_a2.parents:
+                if a1_parent_node.is_mutex(a2_parent_node):
+                    mutex_found=True
+        return mutex_found
+            
 
     def update_s_mutex(self, nodeset: set):
         """ Determine and update sibling mutual exclusion for S-level nodes
