@@ -436,8 +436,7 @@ class PlanningGraph():
         :return: bool
         """
         # TODO test for Interference between nodes
-        node_a1_node_a2 = set(node_a1.action.effect_add) & set(node_a2.action.precond_neg) or set(node_a1.action.effect_rem) & set(node_a2.action.precond_pos)
-        
+        node_a1_node_a2 = set(node_a1.action.effect_add) & set(node_a2.action.precond_neg) or set(node_a1.action.effect_rem) & set(node_a2.action.precond_pos)        
         node_a2_node_a1 = set(node_a2.action.effect_rem) & set(node_a1.action.precond_pos) or set(node_a2.action.effect_add) & set(node_a1.action.precond_neg)
         
         return node_a1_node_a2 or node_a2_node_a1
@@ -458,7 +457,7 @@ class PlanningGraph():
         for a1_parent_node in node_a1.parents:
             for a2_parent_node in node_a2.parents:
                 if a1_parent_node.is_mutex(a2_parent_node):
-                    mutex_found=True
+                    return True
         return mutex_found
             
 
@@ -495,7 +494,7 @@ class PlanningGraph():
         :return: bool
         """
         # TODO test for negation between nodes
-        return False
+        return (node_s1.symbol==node_s2.symbol) and (node_s1.is_pos!=node_s2.is_pos)
 
     def inconsistent_support_mutex(self, node_s1: PgNode_s, node_s2: PgNode_s):
         """
@@ -514,7 +513,12 @@ class PlanningGraph():
         :return: bool
         """
         # TODO test for Inconsistent Support between nodes
-        return False
+        
+        for a1_parent_node in node_s1.parents:
+            for a2_parent_node in node_s2.parents:
+                if not a1_parent_node.is_mutex(a2_parent_node):
+                    return False # we can leave early
+        return True
 
     def h_levelsum(self) -> int:
         """The sum of the level costs of the individual goals (admissible if goals independent)
@@ -524,4 +528,11 @@ class PlanningGraph():
         level_sum = 0
         # TODO implement
         # for each goal in the problem, determine the level cost, then add them together
+        
+        for goal in self.problem.goal:
+            for level,s_level in enumerate(self.s_levels):
+                if PgNode_s(goal, True) in s_level:
+                    level_sum +=level                  
+                    break
+            
         return level_sum
